@@ -1,5 +1,6 @@
+use crate::compiler_option::CompilerOption;
+
 use super::OptionVisitor;
-use crate::compiler_option::{CompilerOption, OptionManagement};
 
 pub struct DefaultOptimizationVisitor;
 
@@ -26,21 +27,13 @@ fn modify_optimization_option(options: &mut Vec<CompilerOption>) {
         opt.disable();
     }
 
-    options.push(CompilerOption::from_arg("-O3"));
-    options.push(CompilerOption::from_arg("-funroll-loops"));
-}
-
-fn modify_debug_option(options: &mut Vec<CompilerOption>) {
-    // disable all options that start with -g
-    if options.get_option("-g").is_none() {
-        options.push(CompilerOption::from_arg("-g"));
-    }
+    options.push(CompilerOption::new("-O3"));
+    options.push(CompilerOption::new("-funroll-loops"));
 }
 
 impl OptionVisitor for DefaultOptimizationVisitor {
     fn visit(&mut self, options: &mut Vec<CompilerOption>) {
         modify_optimization_option(options);
-        modify_debug_option(options);
     }
 }
 

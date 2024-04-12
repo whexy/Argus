@@ -3,9 +3,12 @@ use argus::{
     option_manager::CompilerOptionManager,
     option_visitors::{
         DefaultOptimizationVisitor, DefaultParametersVisitor, LibfuzzerVisitor, OptionVisitor,
-        SanitizerVisitor,
+        RuntimeVisitor, SanitizerVisitor,
     },
 };
+use nix::unistd;
+
+use colored::*;
 
 fn main() {
     let program_name = std::env::args().next().unwrap();
@@ -18,6 +21,7 @@ fn main() {
         Box::<DefaultOptimizationVisitor>::default(),
         Box::<SanitizerVisitor>::default(),
         Box::<LibfuzzerVisitor>::default(),
+        Box::<RuntimeVisitor>::default(),
     ];
 
     for mut visitor in visitors {
@@ -34,5 +38,25 @@ fn main() {
     .to_string_lossy()
     .to_string();
 
-    println!("{} {}", compiler, manager);
+    eprintln!(
+        "[{}::in ] {}",
+        "ARGUS".italic().bold(),
+        format!("{}", std::env::args().collect::<Vec<_>>().join(" ")).yellow()
+    );
+
+    eprintln!(
+        "[{}::out] {}",
+        "ARGUS".italic().bold(),
+        format!("{} {}", compiler, manager).cyan()
+    );
+
+    // Execute the command, directly use execvp
+    let compiler_cstr = std::ffi::CString::new(compiler).unwrap();
+    let commands_cstr_list = manager
+        .get_command()
+        .iter()
+        .map(|s| std::ffi::CString::new(s.as_str()).unwrap())
+        .collect::<Vec<_>>();
+
+    let _ = unistd::execvp(&compiler_cstr, &commands_cstr_list);
 }

@@ -7,3 +7,5 @@ authors = ["Wenxuan Shi <wenxuan.shi@northwestern.edu>"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+colored = "2.0.0"
+nix = "0.22.0"

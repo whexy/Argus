@@ -10,9 +10,7 @@ impl CompilerOptionManager {
             .iter()
             .map(|arg| CompilerOption::from_arg(arg))
             .collect();
-        CompilerOptionManager {
-            options,
-        }
+        CompilerOptionManager { options }
     }
 
     pub fn get_command(&self) -> Vec<String> {
@@ -23,7 +21,6 @@ impl CompilerOptionManager {
             .map(|option| option.to_string())
             .collect();
     }
-
 }
 
 // implement the Display trait for CompilerOptionManager

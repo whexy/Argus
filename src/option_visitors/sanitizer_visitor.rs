@@ -39,6 +39,11 @@ impl SanitizerVisitor {
         if std::env::var("AFL_USE_UBSAN").is_ok() {
             self.use_ubsan = true;
         }
+        if std::env::var("BANDFUZZ_NOSAN").is_ok() {
+            self.use_asan = false;
+            self.use_msan = false;
+            self.use_ubsan = false;
+        }
     }
 }
 
@@ -46,8 +51,20 @@ fn enable_asan(options: &mut Vec<CompilerOption>) {
     options.add_or_mix(&CompilerOption::from_arg("-fsanitize=address"));
 }
 
+fn disable_asan(options: &mut Vec<CompilerOption>) {
+    if let Some(sanitizer_option) = options.get_mut_option("-fsanitize") {
+        sanitizer_option.remove_value("address");
+    }
+}
+
 fn enable_msan(options: &mut Vec<CompilerOption>) {
     options.add_or_mix(&CompilerOption::from_arg("-fsanitize=memory"));
+}
+
+fn disable_msan(options: &mut Vec<CompilerOption>) {
+    if let Some(sanitizer_option) = options.get_mut_option("-fsanitize") {
+        sanitizer_option.remove_value("memory");
+    }
 }
 
 fn enable_ubsan(options: &mut Vec<CompilerOption>) {
@@ -60,17 +77,29 @@ fn enable_ubsan(options: &mut Vec<CompilerOption>) {
     options.add_or_modify(&CompilerOption::from_arg("-fno-omit-frame-pointer"));
 }
 
+fn disable_ubsan(options: &mut Vec<CompilerOption>) {
+    if let Some(sanitizer_option) = options.get_mut_option("-fsanitize") {
+        sanitizer_option.remove_value("undefined");
+    }
+}
+
 impl OptionVisitor for SanitizerVisitor {
     fn visit(&mut self, options: &mut Vec<CompilerOption>) {
         self.init(options);
         if self.use_asan {
             enable_asan(options);
+        } else {
+            disable_asan(options);
         }
         if self.use_msan {
             enable_msan(options);
+        } else {
+            disable_msan(options);
         }
         if self.use_ubsan {
             enable_ubsan(options);
+        } else {
+            disable_ubsan(options);
         }
     }
 }
