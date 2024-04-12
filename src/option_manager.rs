@@ -1,32 +1,39 @@
 use crate::compiler_option::CompilerOption;
-use crate::option_visitors::OptionVisitor;
 
 pub struct CompilerOptionManager {
     pub options: Vec<CompilerOption>,
 }
 
 impl CompilerOptionManager {
-    pub fn new() -> Self {
+    pub fn new(args: Vec<String>) -> Self {
+        let options = args
+            .iter()
+            .map(|arg| CompilerOption::from_arg(arg))
+            .collect();
         CompilerOptionManager {
-            options: Vec::new(),
+            options,
         }
     }
 
-    pub fn apply_visitor(&mut self, visitor: &dyn OptionVisitor) {
-        visitor.visit(&mut self.options);
-    }
-
-    pub fn add_option(&mut self, name: String, is_enabled: bool) {
-        self.options.push(CompilerOption::new(&name, is_enabled));
-    }
-
-    pub fn print_command(&self) {
-        let command = self
+    pub fn get_command(&self) -> Vec<String> {
+        return self
             .options
             .iter()
-            .fold(String::from("clang"), |acc, option| {
-                acc + " " + &option.to_string()
-            });
-        println!("{}", command);
+            .filter(|option| option.is_enabled)
+            .map(|option| option.to_string())
+            .collect();
     }
+
+}
+
+// implement the Display trait for CompilerOptionManager
+impl std::fmt::Display for CompilerOptionManager {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let command = self.get_command();
+        write!(f, "{}", command.join(" "))
+    }
+}
+
+pub fn check_if_option_exists(options: &[CompilerOption], name: &str) -> bool {
+    options.iter().any(|o| o.name == name)
 }

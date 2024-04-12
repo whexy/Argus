@@ -3,18 +3,20 @@ use crate::compiler_option::CompilerOption;
 
 pub struct DefaultParametersVisitor;
 
-impl OptionVisitor for DefaultParametersVisitor {
-    fn visit(&self, options: &mut Vec<CompilerOption>) {
-        let default_options = vec![
-            CompilerOption::new("-g", true),
-            CompilerOption::new("-O3", true),
-            CompilerOption::new("-funroll-loops", true),
-        ];
+impl Default for DefaultParametersVisitor {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
-        for default_option in default_options {
-            if !options.iter().any(|o| o.name == default_option.name) {
-                options.push(default_option);
-            }
-        }
+impl DefaultParametersVisitor {
+    pub fn new() -> Self {
+        DefaultParametersVisitor
+    }
+}
+
+impl OptionVisitor for DefaultParametersVisitor {
+    fn visit(&mut self, options: &mut Vec<CompilerOption>) {
+        // do nothing
     }
 }

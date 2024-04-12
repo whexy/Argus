@@ -1,30 +1,38 @@
 use argus::{
+    clang::{get_clang_path, get_clang_plus_plus_path},
     option_manager::CompilerOptionManager,
     option_visitors::{
-        AsanVisitor, DefaultOptimizationVisitor, DefaultParametersVisitor, LibfuzzerVisitor,
-        OptionVisitor,
+        DefaultOptimizationVisitor, DefaultParametersVisitor, LibfuzzerVisitor, OptionVisitor,
+        SanitizerVisitor,
     },
 };
 
 fn main() {
-    let args: Vec<String> = std::env::args().skip(1).collect(); // skip program name
+    let program_name = std::env::args().next().unwrap();
+    let args: Vec<String> = std::env::args().skip(1).collect();
 
-    let mut manager = CompilerOptionManager::new();
-
-    for arg in args {
-        manager.add_option(arg, true);
-    }
+    let mut manager = CompilerOptionManager::new(args);
 
     let visitors: Vec<Box<dyn OptionVisitor>> = vec![
-        Box::new(DefaultParametersVisitor),
-        Box::new(DefaultOptimizationVisitor),
-        Box::new(AsanVisitor),
-        Box::new(LibfuzzerVisitor),
+        Box::<DefaultParametersVisitor>::default(),
+        Box::<DefaultOptimizationVisitor>::default(),
+        Box::<SanitizerVisitor>::default(),
+        Box::<LibfuzzerVisitor>::default(),
     ];
 
-    for visitor in visitors {
+    for mut visitor in visitors {
         visitor.visit(&mut manager.options);
     }
 
-    manager.print_command();
+    // For debugging purposes, print the command to the console
+    let compiler = if program_name.ends_with("++") {
+        get_clang_plus_plus_path()
+    } else {
+        get_clang_path()
+    }
+    .expect("Could not find clang or clang++")
+    .to_string_lossy()
+    .to_string();
+
+    println!("{} {}", compiler, manager);
 }

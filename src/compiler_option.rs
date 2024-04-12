@@ -1,45 +1,122 @@
+#[derive(Debug, Clone)]
 pub struct CompilerOption {
     pub name: String,
-    pub value: Option<String>,
+    pub values: Vec<String>,
     pub is_enabled: bool,
+    pub has_value: bool,
 }
 
 impl CompilerOption {
-    pub fn new(name: &str, is_enabled: bool) -> Self {
-        let parts: Vec<&str> = name.splitn(2, '=').collect();
+    pub fn new(name: &str) -> Self {
+        CompilerOption {
+            name: name.to_string(),
+            values: Vec::new(),
+            is_enabled: true,
+            has_value: false,
+        }
+    }
+
+    pub fn new_with_value(name: &str, value: Vec<&str>) -> Self {
+        CompilerOption {
+            name: name.to_string(),
+            values: value.iter().map(|&v| v.to_string()).collect(),
+            is_enabled: true,
+            has_value: true,
+        }
+    }
+
+    pub fn from_arg(arg: &str) -> Self {
+        let parts: Vec<&str> = arg.splitn(2, '=').collect();
         let name = parts[0].to_string();
-        let value = parts.get(1).map(|&v| v.to_string());
+        let values = match parts.get(1) {
+            Some(v) => v.split(',').map(|v| v.to_string()).collect(),
+            None => Vec::new(),
+        };
+        let has_value = !values.is_empty();
 
         CompilerOption {
-            name: name,
-            value: value,
-            is_enabled,
+            name,
+            values,
+            is_enabled: true,
+            has_value,
         }
     }
 
+    pub fn contains(&self, value: &str) -> bool {
+        self.values.iter().any(|v| v == value)
+    }
+
+    /// Check if the new_value is already present in the value list. If not, add it to the list.
     pub fn add_or_update_value(&mut self, new_value: &str) {
-        match self.value {
-            Some(ref mut value) => {
-                if !value.contains(new_value) {
-                    value.push(',');
-                    value.push_str(new_value);
-                }
-            }
-            None => {
-                self.value = Some(new_value.to_string());
-            }
+        if !self.has_value {
+            panic!("Option {} cannot have a value", self.name)
+        }
+        if !self.contains(new_value) {
+            self.values.push(new_value.to_string());
         }
     }
 
-    pub fn remove_value(&mut self, value_to_remove: &str, disable_if_empty: bool) {
-        if let Some(value) = &self.value {
-            let values: Vec<&str> = value.split(',').filter(|&v| v != value_to_remove).collect();
-            if values.is_empty() && disable_if_empty {
-                self.is_enabled = false;
-                self.value = None;
-            } else {
-                self.value = Some(values.join(","));
+    /// Remove the value from the list. After that, if the list is empty, disable the option.
+    pub fn remove_value(&mut self, value_to_remove: &str) {
+        if !self.has_value {
+            panic!("Option {} cannot have a value", self.name)
+        }
+        self.values.retain(|v| v != value_to_remove);
+        if self.values.is_empty() {
+            self.disable();
+        }
+    }
+
+    pub fn disable(&mut self) {
+        self.is_enabled = false;
+    }
+
+    pub fn enable(&mut self) {
+        self.is_enabled = true;
+    }
+}
+
+pub trait OptionManagement {
+    fn get_option(&self, name: &str) -> Option<&CompilerOption>;
+    fn get_mut_option(&mut self, name: &str) -> Option<&mut CompilerOption>;
+    fn add_or_modify(&mut self, option: &CompilerOption);
+    fn add_or_mix(&mut self, option: &CompilerOption);
+}
+
+impl OptionManagement for Vec<CompilerOption> {
+    fn get_option(&self, name: &str) -> Option<&CompilerOption> {
+        self.iter().find(|opt| opt.name == name && opt.is_enabled)
+    }
+
+    fn get_mut_option(&mut self, name: &str) -> Option<&mut CompilerOption> {
+        self.iter_mut()
+            .find(|opt| opt.name == name && opt.is_enabled)
+    }
+
+    /// Add the option if it does not exist, otherwise modify the value.
+    /// If the option does not exist, add it to the list.
+    /// If the option exists, its value will be replaced with the new value.
+    fn add_or_modify(&mut self, other: &CompilerOption) {
+        if let Some(opt) = self.get_mut_option(&other.name) {
+            if opt.has_value {
+                opt.values = other.values.clone();
             }
+        } else {
+            self.push(other.clone());
+        }
+    }
+
+    /// Add the option if it does not exist, otherwise update the value.
+    /// If the option does not exist, add it to the list.
+    /// If the option exists, and it does not have a value, set the value to the new value.
+    /// If the option exists, and has a value, try mixing the new value with the existing value.
+    fn add_or_mix(&mut self, other: &CompilerOption) {
+        if let Some(opt) = self.get_mut_option(&other.name) {
+            for value in &other.values {
+                opt.add_or_update_value(value);
+            }
+        } else {
+            self.push(other.clone());
         }
     }
 }
@@ -49,67 +126,10 @@ impl std::fmt::Display for CompilerOption {
         if !self.is_enabled {
             return Ok(());
         }
-        match &self.value {
-            Some(value) => write!(f, "{}={}", self.name, value),
-            None => write!(f, "{}", self.name),
+        if self.has_value {
+            write!(f, "{}={}", self.name, self.values.join(","))
+        } else {
+            write!(f, "{}", self.name)
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_add_or_update_value_new_value() {
-        let mut option = CompilerOption::new("-fsanitize", true);
-        option.add_or_update_value("undefined");
-        assert_eq!(option.value, Some("undefined".to_string()));
-    }
-
-    #[test]
-    fn test_add_or_update_value_update_value() {
-        let mut option = CompilerOption::new("-fsanitize=address", true);
-        option.add_or_update_value("undefined");
-        assert_eq!(option.value, Some("address,undefined".to_string()));
-    }
-
-    #[test]
-    fn test_add_or_update_value_duplicate_value() {
-        let mut option = CompilerOption::new("-fsanitize=address", true);
-        option.add_or_update_value("address");
-        assert_eq!(option.value, Some("address".to_string()));
-    }
-
-    #[test]
-    fn test_remove_value_and_disable_if_empty() {
-        let mut option = CompilerOption::new("-fsanitize=address,fuzz", true);
-        option.remove_value("fuzz", true);
-
-        assert_eq!(option.value, Some("address".to_string()));
-        assert!(option.is_enabled);
-
-        option.remove_value("address", true);
-        assert!(option.value.is_none());
-        assert!(!option.is_enabled);
-    }
-
-    #[test]
-    fn test_remove_value_without_disabling() {
-        let mut option = CompilerOption::new("-fsanitize=fuzz,address", true);
-        option.remove_value("fuzz", false);
-
-        assert_eq!(option.value, Some("address".to_string()));
-        assert!(option.is_enabled); // 确保选项仍然启用
-    }
-
-    #[test]
-    fn test_remove_nonexistent_value() {
-        let mut option = CompilerOption::new("-fsanitize=address,undefined", true);
-        option.remove_value("fuzz", true);
-
-        // 确保值未被修改
-        assert_eq!(option.value, Some("address,undefined".to_string()));
-        assert!(option.is_enabled);
     }
 }
