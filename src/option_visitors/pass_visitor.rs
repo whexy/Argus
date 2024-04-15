@@ -78,5 +78,17 @@ impl OptionVisitor for CMDFuzzVisitor {
         }
         self.pass_manager
             .add_llvm_pass(options, "libArgFuzzPass.so");
+        if options.is_checking() || options.is_preprocessor() || options.is_checking() {
+            return;
+        }
+        let cmdfuzz_runtime = object::find_object("bf-cmdfuzz.so")
+            .expect("Could not find ArgFuzz runtime object file");
+        options.add_or_modify(&CompilerOption::new(
+            cmdfuzz_runtime
+                .canonicalize()
+                .unwrap()
+                .to_string_lossy()
+                .as_ref(),
+        ));
     }
 }
