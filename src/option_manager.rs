@@ -1,3 +1,9 @@
+use std::{
+    fs::File,
+    io::{self, BufReader, Read},
+    path::PathBuf,
+};
+
 use crate::compiler_option::CompilerOption;
 
 pub struct CompilerOptionManager {
@@ -8,7 +14,17 @@ impl CompilerOptionManager {
     pub fn new(args: Vec<String>) -> Self {
         let options = args
             .iter()
-            .map(|arg| CompilerOption::from_arg(arg))
+            .flat_map(|arg| {
+                if arg.starts_with('@') {
+                    let response_file_path = PathBuf::from(&arg[1..]);
+                    match read_response_file(response_file_path) {
+                        Ok(response_options) => response_options,
+                        Err(_) => vec![],
+                    }
+                } else {
+                    vec![CompilerOption::from_arg(arg)]
+                }
+            })
             .collect();
         CompilerOptionManager { options }
     }
@@ -33,4 +49,42 @@ impl std::fmt::Display for CompilerOptionManager {
 
 pub fn check_if_option_exists(options: &[CompilerOption], name: &str) -> bool {
     options.iter().any(|o| o.name == name)
+}
+
+fn read_response_file(path: PathBuf) -> io::Result<Vec<CompilerOption>> {
+    let file = File::open(path)?;
+    let reader = BufReader::new(file);
+    let mut args = Vec::new();
+    let mut current_arg = String::new();
+    let mut in_double_quote = false;
+    let mut in_single_quote = false;
+    let mut escape = false;
+
+    for byte in reader.bytes() {
+        let c = byte? as char;
+
+        if escape {
+            current_arg.push(c);
+            escape = false;
+        } else {
+            match c {
+                '\\' => escape = true,
+                '"' if !in_single_quote => in_double_quote = !in_double_quote,
+                '\'' if !in_double_quote => in_single_quote = !in_single_quote,
+                ' ' | '\n' | '\t' | '\r' if !in_double_quote && !in_single_quote => {
+                    if !current_arg.is_empty() {
+                        args.push(CompilerOption::from_arg(&current_arg));
+                        current_arg.clear();
+                    }
+                }
+                _ => current_arg.push(c),
+            }
+        }
+    }
+
+    if !current_arg.is_empty() {
+        args.push(CompilerOption::from_arg(&current_arg));
+    }
+
+    Ok(args)
 }
