@@ -40,17 +40,21 @@ fn main() {
     .to_string_lossy()
     .to_string();
 
-    eprintln!(
-        "[{}::in ] {}",
-        "ARGUS".italic().bold(),
-        format!("{}", std::env::args().collect::<Vec<_>>().join(" ")).yellow()
-    );
+    let debug = std::env::var("ARGUS_DEBUG").is_ok();
 
-    eprintln!(
-        "[{}::out] {}",
-        "ARGUS".italic().bold(),
-        format!("{} {}", compiler, manager).cyan()
-    );
+    if debug {
+        eprintln!(
+            "[{}::in ] {}",
+            "ARGUS".italic().bold(),
+            format!("{}", std::env::args().collect::<Vec<_>>().join(" ")).yellow()
+        );
+
+        eprintln!(
+            "[{}::out] {}",
+            "ARGUS".italic().bold(),
+            format!("{} {}", compiler, manager).cyan()
+        );
+    }
 
     // Execute the command
     let result = std::process::Command::new(compiler)
@@ -58,13 +62,15 @@ fn main() {
         .status()
         .expect("Failed to execute command");
 
-    if result == std::process::ExitStatus::from_raw(0) {
-        eprintln!("[{}::exec] {}", "ARGUS".italic().bold(), "Success".green());
-    } else {
-        eprintln!(
-            "[{}::exec] {}",
-            "ARGUS".italic().bold(),
-            format!("Exit code: {}", result.code().unwrap()).red()
-        );
+    if debug {
+        if result == std::process::ExitStatus::from_raw(0) {
+            eprintln!("[{}::exec] {}", "ARGUS".italic().bold(), "Success".green());
+        } else {
+            eprintln!(
+                "[{}::exec] {}",
+                "ARGUS".italic().bold(),
+                format!("Exit code: {}", result.code().unwrap()).red()
+            );
+        }
     }
 }
