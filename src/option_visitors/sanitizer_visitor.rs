@@ -103,6 +103,7 @@ fn disable_cov(options: &mut Vec<CompilerOption>) {
 impl OptionVisitor for SanitizerVisitor {
     fn visit(&mut self, options: &mut Vec<CompilerOption>) {
         self.init(options);
+        options.add_or_modify(&CompilerOption::from_arg("-U_FORTIFY_SOURCE"));
         if self.use_asan {
             enable_asan(options);
         } else {
