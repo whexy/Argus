@@ -73,4 +73,7 @@ fn main() {
             );
         }
     }
+
+    // return the exit code
+    std::process::exit(result.code().unwrap());
 }
