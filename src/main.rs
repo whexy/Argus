@@ -28,6 +28,7 @@ fn main() {
 
     for mut visitor in visitors {
         visitor.visit(&mut manager.options);
+        manager.cleanup();
     }
 
     // For debugging purposes, print the command to the console
@@ -46,7 +47,7 @@ fn main() {
         eprintln!(
             "[{}::in ] {}",
             "ARGUS".italic().bold(),
-            format!("{}", std::env::args().collect::<Vec<_>>().join(" ")).yellow()
+            std::env::args().collect::<Vec<_>>().join(" ").to_string().yellow()
         );
 
         eprintln!(

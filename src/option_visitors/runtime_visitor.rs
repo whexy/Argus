@@ -22,10 +22,12 @@ impl RuntimeVisitor {
         let use_runtime = std::env::var("BANDFUZZ_NORUNTIME").is_err();
         let runtime_path =
             std::env::var("BANDFUZZ_RUNTIME").unwrap_or_else(|_| "bf-rt.o".to_string());
-        let runtime = find_object(&runtime_path).expect(&format!(
-            "Could not find runtime object file {}",
-            runtime_path.as_str()
-        ));
+        let runtime = find_object(&runtime_path).unwrap_or_else(|| {
+            panic!(
+                "Could not find runtime object file {}",
+                runtime_path.as_str()
+            )
+        });
         RuntimeVisitor {
             use_runtime,
             runtime,
@@ -41,7 +43,7 @@ impl OptionVisitor for RuntimeVisitor {
         if options.is_compiling() || options.is_preprocessor() || options.is_checking() {
             return;
         }
-        options.add_or_modify(&&CompilerOption::new(
+        options.add_or_modify(&CompilerOption::new(
             self.runtime
                 .canonicalize()
                 .unwrap()

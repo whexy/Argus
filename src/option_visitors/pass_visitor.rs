@@ -17,8 +17,8 @@ impl LLVMPassManager {
     }
 
     pub fn add_llvm_pass(&self, options: &mut Vec<CompilerOption>, pass: &str) {
-        let pass_object =
-            object::find_object(pass).expect(&format!("Could not find pass object file {}", pass));
+        let pass_object = object::find_object(pass)
+            .unwrap_or_else(|| panic!("Could not find pass object file {}", pass));
         let pass_path = pass_object
             .canonicalize()
             .unwrap()

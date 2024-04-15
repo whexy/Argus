@@ -34,9 +34,11 @@ pub fn get_llvm_major_version() -> io::Result<u32> {
         String::from_utf8(output.stdout).map_err(|e| io::Error::new(ErrorKind::InvalidData, e))?;
     let version_parts: Vec<&str> = version_str.trim().split('.').collect();
     let major_version = version_parts
-        .get(0)
+        .first()
         .ok_or_else(|| io::Error::new(ErrorKind::InvalidData, "Could not parse LLVM version"))?;
-    Ok(major_version.parse().map_err(|e| io::Error::new(ErrorKind::InvalidData, e))?)
+    major_version
+        .parse()
+        .map_err(|e| io::Error::new(ErrorKind::InvalidData, e))
 }
 
 /// Get the path to the clang binary

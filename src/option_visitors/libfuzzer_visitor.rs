@@ -23,6 +23,9 @@ impl OptionVisitor for LibfuzzerVisitor {
             if sanitizer_options.contains("fuzzer") {
                 sanitizer_options.remove_value("fuzzer");
 
+                if options.is_compiling() || options.is_preprocessor() || options.is_checking() {
+                    return;
+                }
                 // replace libFuzzer with the "FUZZER_LIB"
                 let fuzzer_lib =
                     std::env::var("FUZZER_LIB").unwrap_or(String::from("bf-llvm_mode.o"));
@@ -32,7 +35,7 @@ impl OptionVisitor for LibfuzzerVisitor {
                     ));
                 } else {
                     panic!(
-                        "Could not find the runtime library for the current FUZZER_LIB: {}",
+                        "Could not find the driver library for the current FUZZER_LIB: {}",
                         fuzzer_lib
                     );
                 }

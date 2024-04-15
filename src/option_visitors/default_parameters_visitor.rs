@@ -1,5 +1,3 @@
-use std::option;
-
 use super::OptionVisitor;
 use crate::{
     compiler_option::{CompilerOption, OptionManagement},
@@ -48,17 +46,25 @@ fn disable_unfriendly_options(options: &mut Vec<CompilerOption>) {
     // remove the -z defs options. This requires some hacky code.
     let mut i = 0;
     while i < options.len() {
-        if options[i].name == "-z" || options[i].name == "-Wl,-z" {
+        if (options[i].name == "-z" || options[i].name == "-Wl,-z") && (i + 1 < options.len()) {
             // check the next option
-            if i + 1 < options.len() {
-                if options[i + 1].name == "defs" || options[i + 1].name == "-Wl,defs" {
-                    options[i].disable();
-                    options[i + 1].disable();
-                    i += 1;
-                }
+            if options[i + 1].name == "defs" || options[i + 1].name == "-Wl,defs" {
+                options[i].disable();
+                options[i + 1].disable();
+                i += 1;
             }
         }
         i += 1;
+    }
+
+    // remove unwanted runtime libraries, because we'll add them later
+    let unwanted_runtime_libraries = vec!["bf-rt.o", "bf-llvm_mode.o"];
+    for library in unwanted_runtime_libraries {
+        options.iter_mut().for_each(|option| {
+            if option.contains(library) {
+                option.disable();
+            }
+        });
     }
 }
 

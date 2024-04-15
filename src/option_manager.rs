@@ -15,9 +15,8 @@ impl CompilerOptionManager {
         let options = args
             .iter()
             .flat_map(|arg| {
-                if arg.starts_with('@') {
-                    let response_file_path = PathBuf::from(&arg[1..]);
-                    match read_response_file(response_file_path) {
+                if let Some(response_file_path) = arg.strip_prefix('@') {
+                    match read_response_file(PathBuf::from(response_file_path)) {
                         Ok(response_options) => response_options,
                         Err(_) => vec![],
                     }
@@ -36,6 +35,10 @@ impl CompilerOptionManager {
             .filter(|option| option.is_enabled)
             .map(|option| option.to_string())
             .collect();
+    }
+
+    pub fn cleanup(&mut self) {
+        self.options.retain(|option| option.is_enabled);
     }
 }
 
