@@ -81,7 +81,7 @@ impl OptionVisitor for CMDFuzzVisitor {
         if options.is_checking() || options.is_preprocessor() || options.is_checking() {
             return;
         }
-        let cmdfuzz_runtime = object::find_object("bf-cmdfuzz.so")
+        let cmdfuzz_runtime = object::find_object("bf-cmdfuzz.o")
             .expect("Could not find ArgFuzz runtime object file");
         options.add_or_modify(&CompilerOption::new(
             cmdfuzz_runtime
