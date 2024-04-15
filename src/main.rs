@@ -5,7 +5,7 @@ use argus::{
     option_manager::CompilerOptionManager,
     option_visitors::{
         CMDFuzzVisitor, DefaultOptimizationVisitor, DefaultParametersVisitor, LibfuzzerVisitor,
-        OptionVisitor, RuntimeVisitor, SanitizerVisitor,
+        OptionVisitor, RuntimeVisitor, SanitizerVisitor, TTRFuzzVisitor,
     },
 };
 
@@ -23,6 +23,7 @@ fn main() {
         Box::<SanitizerVisitor>::default(),
         Box::<LibfuzzerVisitor>::default(),
         Box::<RuntimeVisitor>::default(),
+        Box::<TTRFuzzVisitor>::default(),
         Box::<CMDFuzzVisitor>::default(),
     ];
 
@@ -47,7 +48,11 @@ fn main() {
         eprintln!(
             "[{}::in ] {}",
             "ARGUS".italic().bold(),
-            std::env::args().collect::<Vec<_>>().join(" ").to_string().yellow()
+            std::env::args()
+                .collect::<Vec<_>>()
+                .join(" ")
+                .to_string()
+                .yellow()
         );
 
         eprintln!(

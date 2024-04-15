@@ -92,3 +92,34 @@ impl OptionVisitor for CMDFuzzVisitor {
         ));
     }
 }
+
+
+pub struct TTRFuzzVisitor {
+    pass_manager: LLVMPassManager,
+    enabled: bool,
+}
+
+impl Default for TTRFuzzVisitor {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl TTRFuzzVisitor {
+    pub fn new() -> Self {
+        TTRFuzzVisitor {
+            pass_manager: LLVMPassManager::new(),
+            enabled: std::env::var("TTRFUZZ").is_ok(),
+        }
+    }
+}
+
+impl OptionVisitor for TTRFuzzVisitor {
+    fn visit(&mut self, options: &mut Vec<CompilerOption>) {
+        if !self.enabled {
+            return;
+        }
+        self.pass_manager
+            .add_llvm_pass(options, "libTTRPass.so");
+    }
+}
