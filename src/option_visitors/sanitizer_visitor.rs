@@ -5,6 +5,7 @@ pub struct SanitizerVisitor {
     use_asan: bool,
     use_msan: bool,
     use_ubsan: bool,
+    use_cov: bool,
 }
 
 impl Default for SanitizerVisitor {
@@ -19,6 +20,7 @@ impl SanitizerVisitor {
             use_asan: false,
             use_msan: false,
             use_ubsan: false,
+            use_cov: true,
         }
     }
 
@@ -43,6 +45,9 @@ impl SanitizerVisitor {
             self.use_asan = false;
             self.use_msan = false;
             self.use_ubsan = false;
+        }
+        if std::env::var("BANDFUZZ_NOCOV").is_ok() {
+            self.use_cov = false;
         }
     }
 }
@@ -83,6 +88,18 @@ fn disable_ubsan(options: &mut Vec<CompilerOption>) {
     }
 }
 
+fn enable_cov(options: &mut Vec<CompilerOption>) {
+    options.add_or_modify(&CompilerOption::from_arg(
+        "-fsanitize-coverage=trace-pc-guard",
+    ));
+}
+
+fn disable_cov(options: &mut Vec<CompilerOption>) {
+    if let Some(sanitizer_coverage_option) = options.get_mut_option("-fsanitize-coverage") {
+        sanitizer_coverage_option.disable();
+    }
+}
+
 impl OptionVisitor for SanitizerVisitor {
     fn visit(&mut self, options: &mut Vec<CompilerOption>) {
         self.init(options);
@@ -91,15 +108,23 @@ impl OptionVisitor for SanitizerVisitor {
         } else {
             disable_asan(options);
         }
+
         if self.use_msan {
             enable_msan(options);
         } else {
             disable_msan(options);
         }
+
         if self.use_ubsan {
             enable_ubsan(options);
         } else {
             disable_ubsan(options);
+        }
+
+        if self.use_cov {
+            enable_cov(options);
+        } else {
+            disable_cov(options);
         }
     }
 }
