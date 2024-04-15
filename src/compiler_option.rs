@@ -81,6 +81,10 @@ pub trait OptionManagement {
     fn get_mut_option(&mut self, name: &str) -> Option<&mut CompilerOption>;
     fn add_or_modify(&mut self, option: &CompilerOption);
     fn add_or_mix(&mut self, option: &CompilerOption);
+    fn add_option(&mut self, other: &CompilerOption);
+    fn is_preprocessor(&self) -> bool;
+    fn is_compiling(&self) -> bool;
+    fn is_checking(&self) -> bool;
 }
 
 impl OptionManagement for Vec<CompilerOption> {
@@ -118,6 +122,24 @@ impl OptionManagement for Vec<CompilerOption> {
         } else {
             self.push(other.clone());
         }
+    }
+
+    fn add_option(&mut self, other: &CompilerOption) {
+        self.push(other.clone());
+    }
+
+    fn is_preprocessor(&self) -> bool {
+        self.iter().any(|opt| opt.name == "-E" && opt.is_enabled)
+    }
+
+    fn is_compiling(&self) -> bool {
+        self.iter().any(|opt| opt.name == "-c" && opt.is_enabled)
+    }
+
+    /// The compiler has no option that is not starting with `-` shall be considered as a checking process.
+    fn is_checking(&self) -> bool {
+        // TODO: support response file mode (e.g. `clang @file`). If you don't know what it is, google it.
+        self.iter().all(|opt| opt.name.starts_with('-'))
     }
 }
 

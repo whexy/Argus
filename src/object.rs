@@ -9,6 +9,7 @@ use std::path::{Path, PathBuf};
 /// 2. Check /proc/self/exe (Linux specific).
 /// 3. Use a predefined, hardcoded path.
 /// 4. Try the current directory.
+/// 5. Try the / (root) directory.
 pub fn find_object(obj: &str) -> Option<PathBuf> {
     // Check the object file path directly
     if Path::new(obj).exists() {
@@ -57,6 +58,12 @@ pub fn find_object(obj: &str) -> Option<PathBuf> {
 
     // Try the current directory
     let path = Path::new(".").join(obj);
+    if path.exists() {
+        return Some(path);
+    }
+
+    // Try the / (root) directory
+    let path = Path::new("/").join(obj);
     if path.exists() {
         return Some(path);
     }

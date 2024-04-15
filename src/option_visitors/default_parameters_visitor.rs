@@ -1,7 +1,7 @@
 use super::OptionVisitor;
 use crate::{
-    clang,
     compiler_option::{CompilerOption, OptionManagement},
+    llvm,
 };
 
 pub struct DefaultParametersVisitor;
@@ -19,7 +19,7 @@ impl DefaultParametersVisitor {
 }
 
 fn add_llvm_lib(options: &mut Vec<CompilerOption>) {
-    let llvm_dir = clang::get_llvm_libdir().expect("Could not find LLVM lib directory");
+    let llvm_dir = llvm::get_llvm_libdir().expect("Could not find LLVM lib directory");
     // check if llvm_dir is in /usr or /lib
     if !llvm_dir.starts_with("/usr") && !llvm_dir.starts_with("/lib") {
         options.push(CompilerOption::from_arg(&format!(
@@ -29,19 +29,11 @@ fn add_llvm_lib(options: &mut Vec<CompilerOption>) {
     }
 }
 
-fn add_debug_option(options: &mut Vec<CompilerOption>) {
-    // disable all options that start with -g
-    options.add_or_modify(&CompilerOption::new("-g"));
-}
-
-fn add_pic(options: &mut Vec<CompilerOption>) {
-    options.add_or_modify(&CompilerOption::new("-fPIC"));
-}
-
 impl OptionVisitor for DefaultParametersVisitor {
     fn visit(&mut self, options: &mut Vec<CompilerOption>) {
+        options.add_or_modify(&CompilerOption::new("-Wno-unused-command-line-argument"));
         add_llvm_lib(options);
-        add_debug_option(options);
-        add_pic(options);
+        options.add_or_modify(&CompilerOption::new("-g"));
+        options.add_or_modify(&CompilerOption::new("-fPIC"));
     }
 }

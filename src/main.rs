@@ -1,12 +1,13 @@
+use std::os::unix::process::ExitStatusExt;
+
 use argus::{
-    clang::{get_clang_path, get_clang_plus_plus_path},
+    llvm::{get_clang_path, get_clang_plus_plus_path},
     option_manager::CompilerOptionManager,
     option_visitors::{
-        DefaultOptimizationVisitor, DefaultParametersVisitor, LibfuzzerVisitor, OptionVisitor,
-        RuntimeVisitor, SanitizerVisitor,
+        CMDFuzzVisitor, DefaultOptimizationVisitor, DefaultParametersVisitor, LibfuzzerVisitor,
+        OptionVisitor, RuntimeVisitor, SanitizerVisitor,
     },
 };
-use nix::unistd;
 
 use colored::*;
 
@@ -22,6 +23,7 @@ fn main() {
         Box::<SanitizerVisitor>::default(),
         Box::<LibfuzzerVisitor>::default(),
         Box::<RuntimeVisitor>::default(),
+        Box::<CMDFuzzVisitor>::default(),
     ];
 
     for mut visitor in visitors {
@@ -50,13 +52,19 @@ fn main() {
         format!("{} {}", compiler, manager).cyan()
     );
 
-    // Execute the command, directly use execvp
-    let compiler_cstr = std::ffi::CString::new(compiler).unwrap();
-    let commands_cstr_list = manager
-        .get_command()
-        .iter()
-        .map(|s| std::ffi::CString::new(s.as_str()).unwrap())
-        .collect::<Vec<_>>();
+    // Execute the command
+    let result = std::process::Command::new(compiler)
+        .args(manager.get_command())
+        .status()
+        .expect("Failed to execute command");
 
-    let _ = unistd::execvp(&compiler_cstr, &commands_cstr_list);
+    if result == std::process::ExitStatus::from_raw(0) {
+        eprintln!("[{}::exec] {}", "ARGUS".italic().bold(), "Success".green());
+    } else {
+        eprintln!(
+            "[{}::exec] {}",
+            "ARGUS".italic().bold(),
+            format!("Exit code: {}", result.code().unwrap()).red()
+        );
+    }
 }

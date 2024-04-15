@@ -8,4 +8,3 @@ authors = ["Wenxuan Shi <wenxuan.shi@northwestern.edu>"]
 
 [dependencies]
 colored = "2.0.0"
-nix = "0.22.0"
