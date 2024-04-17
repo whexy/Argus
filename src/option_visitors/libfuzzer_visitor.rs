@@ -28,7 +28,7 @@ impl OptionVisitor for LibfuzzerVisitor {
                 }
                 // replace libFuzzer with the "FUZZER_LIB"
                 let fuzzer_lib =
-                    std::env::var("FUZZER_LIB").unwrap_or(String::from("bf-llvm_mode.o"));
+                    std::env::var("FUZZER_LIB").unwrap_or(String::from("bandfuzz-driver.o"));
                 if let Some(runtime_library) = find_object(&fuzzer_lib) {
                     options.add_or_modify(&CompilerOption::new(
                         runtime_library.canonicalize().unwrap().to_string_lossy().as_ref(),
