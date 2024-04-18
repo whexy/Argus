@@ -20,6 +20,12 @@ impl Default for RuntimeVisitor {
 impl RuntimeVisitor {
     pub fn new() -> Self {
         let use_runtime = std::env::var("BANDFUZZ_NORUNTIME").is_err();
+        if !use_runtime {
+            return RuntimeVisitor {
+                use_runtime: false,
+                runtime: PathBuf::new(),
+            };
+        }
         let runtime_path =
             std::env::var("BANDFUZZ_RUNTIME").unwrap_or_else(|_| "bandfuzz-rt.o".to_string());
         let runtime = find_object(&runtime_path).unwrap_or_else(|| {
