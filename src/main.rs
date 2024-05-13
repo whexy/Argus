@@ -5,7 +5,7 @@ use argus::{
     option_manager::CompilerOptionManager,
     option_visitors::{
         CMDFuzzVisitor, DefaultOptimizationVisitor, DefaultParametersVisitor, LibfuzzerVisitor,
-        OptionVisitor, RuntimeVisitor, SanitizerVisitor, TTRFuzzVisitor,
+        OptionVisitor, RuntimeVisitor, SanitizerVisitor, TTRFuzzVisitor, XVisitor,
     },
 };
 
@@ -21,6 +21,7 @@ fn main() {
         Box::<DefaultParametersVisitor>::default(),
         Box::<DefaultOptimizationVisitor>::default(),
         Box::<SanitizerVisitor>::default(),
+        Box::<XVisitor>::default(),
         Box::<LibfuzzerVisitor>::default(),
         Box::<RuntimeVisitor>::default(),
         Box::<TTRFuzzVisitor>::default(),
