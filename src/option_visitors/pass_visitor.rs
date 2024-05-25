@@ -1,5 +1,6 @@
 use crate::{
     compiler_option::{CompilerOption, OptionManagement},
+    env::{CMDFUZZ, TTRFUZZ},
     llvm, object,
 };
 
@@ -66,7 +67,7 @@ impl CMDFuzzVisitor {
     pub fn new() -> Self {
         CMDFuzzVisitor {
             pass_manager: LLVMPassManager::new(),
-            enabled: std::env::var("CMDFUZZ").is_ok(),
+            enabled: std::env::var(CMDFUZZ).is_ok(),
         }
     }
 }
@@ -93,7 +94,6 @@ impl OptionVisitor for CMDFuzzVisitor {
     }
 }
 
-
 pub struct TTRFuzzVisitor {
     pass_manager: LLVMPassManager,
     enabled: bool,
@@ -109,7 +109,7 @@ impl TTRFuzzVisitor {
     pub fn new() -> Self {
         TTRFuzzVisitor {
             pass_manager: LLVMPassManager::new(),
-            enabled: std::env::var("TTRFUZZ").is_ok(),
+            enabled: std::env::var(TTRFUZZ).is_ok(),
         }
     }
 }
@@ -119,7 +119,6 @@ impl OptionVisitor for TTRFuzzVisitor {
         if !self.enabled {
             return;
         }
-        self.pass_manager
-            .add_llvm_pass(options, "libTTRPass.so");
+        self.pass_manager.add_llvm_pass(options, "libTTRPass.so");
     }
 }

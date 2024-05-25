@@ -3,6 +3,7 @@ use std::path::PathBuf;
 use super::OptionVisitor;
 use crate::{
     compiler_option::{CompilerOption, OptionManagement},
+    env::{NORUNTIME, RUNTIME},
     object::find_object,
 };
 
@@ -19,15 +20,14 @@ impl Default for RuntimeVisitor {
 
 impl RuntimeVisitor {
     pub fn new() -> Self {
-        let use_runtime = std::env::var("BANDFUZZ_NORUNTIME").is_err();
+        let use_runtime = std::env::var(NORUNTIME).is_err();
         if !use_runtime {
             return RuntimeVisitor {
                 use_runtime: false,
                 runtime: PathBuf::new(),
             };
         }
-        let runtime_path =
-            std::env::var("BANDFUZZ_RUNTIME").unwrap_or_else(|_| "bandfuzz-rt.o".to_string());
+        let runtime_path = std::env::var(RUNTIME).unwrap_or_else(|_| "bandfuzz-rt.o".to_string());
         let runtime = find_object(&runtime_path).unwrap_or_else(|| {
             panic!(
                 "Could not find runtime object file {}",

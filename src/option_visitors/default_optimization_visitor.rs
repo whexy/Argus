@@ -1,4 +1,7 @@
-use crate::compiler_option::{CompilerOption, OptionManagement};
+use crate::{
+    compiler_option::{CompilerOption, OptionManagement},
+    env::OPT_LEVEL,
+};
 
 use super::OptionVisitor;
 
@@ -21,18 +24,18 @@ impl DefaultOptimizationVisitor {
 
     pub fn init(&mut self, options: &Vec<CompilerOption>) {
         let mut option_level = None;
-        if options.get_option("-O3").is_some() {
+        if !options.get_options("-O3").is_empty() {
             option_level = Some(3);
-        } else if options.get_option("-O2").is_some() {
+        } else if !options.get_options("-O2").is_empty() {
             option_level = Some(2);
-        } else if options.get_option("-O1").is_some() {
+        } else if !options.get_options("-O1").is_empty() {
             option_level = Some(1);
-        } else if options.get_option("-O0").is_some() {
+        } else if !options.get_options("-O0").is_empty() {
             option_level = Some(0);
         }
 
         // Override by environment variable
-        if let Ok(level) = std::env::var("BANDFUZZ_OPT") {
+        if let Ok(level) = std::env::var(OPT_LEVEL) {
             if let Ok(level) = level.parse::<u8>() {
                 if (0..=3).contains(&level) {
                     option_level = Some(level);

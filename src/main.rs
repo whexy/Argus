@@ -1,6 +1,7 @@
 use std::os::unix::process::ExitStatusExt;
 
 use argus::{
+    env::*,
     llvm::{get_clang_path, get_clang_plus_plus_path},
     option_manager::CompilerOptionManager,
     option_visitors::{
@@ -18,8 +19,8 @@ fn main() {
     let mut manager = CompilerOptionManager::new(args);
 
     let visitors: Vec<Box<dyn OptionVisitor>> = vec![
-        Box::<DefaultParametersVisitor>::default(),
-        Box::<DefaultOptimizationVisitor>::default(),
+        Box::<DefaultParametersVisitor>::default(), // add -g, -fPIC, remove some -W options
+        Box::<DefaultOptimizationVisitor>::default(), // add -O3
         Box::<SanitizerVisitor>::default(),
         Box::<XVisitor>::default(),
         Box::<LibfuzzerVisitor>::default(),
@@ -43,7 +44,7 @@ fn main() {
     .to_string_lossy()
     .to_string();
 
-    let debug = std::env::var("ARGUS_DEBUG").is_ok();
+    let debug = std::env::var(ARGUS_DEBUG).is_ok();
 
     if debug {
         eprintln!(
@@ -61,6 +62,7 @@ fn main() {
             "ARGUS".italic().bold(),
             format!("{} {}", compiler, manager).cyan()
         );
+        print_envs()
     }
 
     // Execute the command

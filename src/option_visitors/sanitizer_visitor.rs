@@ -1,5 +1,8 @@
 use super::OptionVisitor;
-use crate::compiler_option::{CompilerOption, OptionManagement};
+use crate::{
+    compiler_option::{CompilerOption, OptionManagement},
+    env::{DISABLE_COVSAN, ENABLE_ASAN, ENABLE_MSAN, ENABLE_UBSAN, NOSANITIZER},
+};
 
 pub struct SanitizerVisitor {
     use_asan: bool,
@@ -25,28 +28,28 @@ impl SanitizerVisitor {
     }
 
     fn init(&mut self, options: &mut Vec<CompilerOption>) {
-        if let Some(sanitizer_options) = options.get_option("-fsanitize") {
-            self.use_asan = sanitizer_options.contains("address");
-            self.use_msan = sanitizer_options.contains("memory");
-            self.use_ubsan = sanitizer_options.contains("undefined");
+        for sanitizer_options in options.get_options("-fsanitize") {
+            self.use_asan |= sanitizer_options.contains("address");
+            self.use_msan |= sanitizer_options.contains("memory");
+            self.use_ubsan |= sanitizer_options.contains("undefined");
         }
 
         // check environment variables
-        if std::env::var("AFL_USE_ASAN").is_ok() {
-            self.use_asan = true;
-        }
-        if std::env::var("AFL_USE_MSAN").is_ok() {
-            self.use_msan = true;
-        }
-        if std::env::var("AFL_USE_UBSAN").is_ok() {
-            self.use_ubsan = true;
-        }
-        if std::env::var("BANDFUZZ_NOSAN").is_ok() {
+        if std::env::var(NOSANITIZER).is_ok() {
             self.use_asan = false;
             self.use_msan = false;
             self.use_ubsan = false;
         }
-        if std::env::var("BANDFUZZ_NOCOV").is_ok() {
+        if std::env::var(ENABLE_ASAN).is_ok() {
+            self.use_asan = true;
+        }
+        if std::env::var(ENABLE_MSAN).is_ok() {
+            self.use_msan = true;
+        }
+        if std::env::var(ENABLE_UBSAN).is_ok() {
+            self.use_ubsan = true;
+        }
+        if std::env::var(DISABLE_COVSAN).is_ok() {
             self.use_cov = false;
         }
     }
@@ -57,7 +60,7 @@ fn enable_asan(options: &mut Vec<CompilerOption>) {
 }
 
 fn disable_asan(options: &mut Vec<CompilerOption>) {
-    if let Some(sanitizer_option) = options.get_mut_option("-fsanitize") {
+    for sanitizer_option in options.get_mut_options("-fsanitize") {
         sanitizer_option.remove_value("address");
     }
 }
@@ -67,7 +70,7 @@ fn enable_msan(options: &mut Vec<CompilerOption>) {
 }
 
 fn disable_msan(options: &mut Vec<CompilerOption>) {
-    if let Some(sanitizer_option) = options.get_mut_option("-fsanitize") {
+    for sanitizer_option in options.get_mut_options("-fsanitize") {
         sanitizer_option.remove_value("memory");
     }
 }
@@ -83,7 +86,7 @@ fn enable_ubsan(options: &mut Vec<CompilerOption>) {
 }
 
 fn disable_ubsan(options: &mut Vec<CompilerOption>) {
-    if let Some(sanitizer_option) = options.get_mut_option("-fsanitize") {
+    for sanitizer_option in options.get_mut_options("-fsanitize") {
         sanitizer_option.remove_value("undefined");
     }
 }
@@ -95,7 +98,7 @@ fn enable_cov(options: &mut Vec<CompilerOption>) {
 }
 
 fn disable_cov(options: &mut Vec<CompilerOption>) {
-    if let Some(sanitizer_coverage_option) = options.get_mut_option("-fsanitize-coverage") {
+    for sanitizer_coverage_option in options.get_mut_options("-fsanitize-coverage") {
         sanitizer_coverage_option.disable();
     }
 }

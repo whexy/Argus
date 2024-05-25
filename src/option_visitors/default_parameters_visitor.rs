@@ -38,7 +38,7 @@ fn disable_unfriendly_options(options: &mut Vec<CompilerOption>) {
     ];
 
     for option in unfriendly_options {
-        if let Some(option) = options.get_mut_option(option) {
+        for option in options.get_mut_options(option) {
             option.disable();
         }
     }

@@ -77,8 +77,8 @@ impl CompilerOption {
 }
 
 pub trait OptionManagement {
-    fn get_option(&self, name: &str) -> Option<&CompilerOption>;
-    fn get_mut_option(&mut self, name: &str) -> Option<&mut CompilerOption>;
+    fn get_options(&self, name: &str) -> Vec<&CompilerOption>;
+    fn get_mut_options(&mut self, name: &str) -> Vec<&mut CompilerOption>;
     fn add_or_modify(&mut self, option: &CompilerOption);
     fn add_or_mix(&mut self, option: &CompilerOption);
     fn add_option(&mut self, other: &CompilerOption);
@@ -88,39 +88,41 @@ pub trait OptionManagement {
 }
 
 impl OptionManagement for Vec<CompilerOption> {
-    fn get_option(&self, name: &str) -> Option<&CompilerOption> {
-        self.iter().find(|opt| opt.name == name && opt.is_enabled)
+    fn get_options(&self, name: &str) -> Vec<&CompilerOption> {
+        self.iter()
+            .filter(move |opt| opt.name == name && opt.is_enabled)
+            .collect()
     }
 
-    fn get_mut_option(&mut self, name: &str) -> Option<&mut CompilerOption> {
+    fn get_mut_options(&mut self, name: &str) -> Vec<&mut CompilerOption> {
         self.iter_mut()
-            .find(|opt| opt.name == name && opt.is_enabled)
+            .filter(|opt| opt.name == name && opt.is_enabled)
+            .collect()
     }
 
-    /// Add the option if it does not exist, otherwise modify the value.
-    /// If the option does not exist, add it to the list.
-    /// If the option exists, its value will be replaced with the new value.
     fn add_or_modify(&mut self, other: &CompilerOption) {
-        if let Some(opt) = self.get_mut_option(&other.name) {
-            if opt.has_value {
-                opt.values = other.values.clone();
-            }
-        } else {
-            self.push(other.clone());
+        let mut existed_options = self.get_mut_options(&other.name);
+        match existed_options.len() {
+            1 => existed_options[0].values.clone_from(&other.values),
+            _ => self.push(other.clone()),
         }
     }
 
-    /// Add the option if it does not exist, otherwise update the value.
-    /// If the option does not exist, add it to the list.
-    /// If the option exists, and it does not have a value, set the value to the new value.
-    /// If the option exists, and has a value, try mixing the new value with the existing value.
     fn add_or_mix(&mut self, other: &CompilerOption) {
-        if let Some(opt) = self.get_mut_option(&other.name) {
-            for value in &other.values {
-                opt.add_or_update_value(value);
+        let mut existed_options = self.get_mut_options(&other.name);
+
+        match existed_options.len() {
+            1 => {
+                let existed_option = &mut existed_options[0];
+                if existed_option.has_value {
+                    for value in &other.values {
+                        existed_option.add_or_update_value(value);
+                    }
+                } else {
+                    existed_option.values.clone_from(&other.values);
+                }
             }
-        } else {
-            self.push(other.clone());
+            _ => self.push(other.clone()),
         }
     }
 
