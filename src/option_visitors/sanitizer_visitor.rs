@@ -1,7 +1,7 @@
 use super::OptionVisitor;
 use crate::{
     compiler_option::{CompilerOption, OptionManagement},
-    env::{DISABLE_COVSAN, ENABLE_ASAN, ENABLE_MSAN, ENABLE_UBSAN, NOSANITIZER},
+    env::{ENABLE_ASAN, ENABLE_COVSAN, ENABLE_MSAN, ENABLE_UBSAN, NOSANITIZER},
 };
 
 pub struct SanitizerVisitor {
@@ -49,8 +49,8 @@ impl SanitizerVisitor {
         if std::env::var(ENABLE_UBSAN).is_ok() {
             self.use_ubsan = true;
         }
-        if std::env::var(DISABLE_COVSAN).is_ok() {
-            self.use_cov = false;
+        if std::env::var(ENABLE_COVSAN).is_ok() {
+            self.use_cov = true;
         }
     }
 }

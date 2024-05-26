@@ -22,13 +22,13 @@ fn main() {
     let visitors: Vec<Box<dyn OptionVisitor>> = vec![
         Box::<DefaultParametersVisitor>::default(), // add -g, -fPIC, remove some -W options
         Box::<DefaultOptimizationVisitor>::default(), // add -O3
-        Box::<SanCovPassVisitor>::default(),
         Box::<SanitizerVisitor>::default(),
         Box::<XVisitor>::default(),
         Box::<LibfuzzerVisitor>::default(),
         Box::<RuntimeVisitor>::default(),
         Box::<TTRFuzzVisitor>::default(),
         Box::<CMDFuzzVisitor>::default(),
+        Box::<SanCovPassVisitor>::default(),
     ];
 
     for mut visitor in visitors {

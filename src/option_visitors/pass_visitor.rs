@@ -148,9 +148,6 @@ impl OptionVisitor for SanCovPassVisitor {
         if !self.enabled {
             return;
         }
-        let use_sancov = !options.get_options("-fsanitize-coverage").is_empty();
-        if use_sancov {
-            self.pass_manager.add_llvm_pass(options, "SanCovPass.so");
-        }
+        self.pass_manager.add_llvm_pass(options, "SanCovPass.so");
     }
 }
