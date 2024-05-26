@@ -1,6 +1,6 @@
 use crate::{
     compiler_option::{CompilerOption, OptionManagement},
-    env::{CMDFUZZ, TTRFUZZ},
+    env::{CMDFUZZ, NATIVE_SANCOV, TTRFUZZ},
     llvm, object,
 };
 
@@ -120,5 +120,37 @@ impl OptionVisitor for TTRFuzzVisitor {
             return;
         }
         self.pass_manager.add_llvm_pass(options, "libTTRPass.so");
+    }
+}
+
+pub struct SanCovPassVisitor {
+    pass_manager: LLVMPassManager,
+    enabled: bool,
+}
+
+impl Default for SanCovPassVisitor {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl SanCovPassVisitor {
+    pub fn new() -> Self {
+        SanCovPassVisitor {
+            pass_manager: LLVMPassManager::new(),
+            enabled: !std::env::var(NATIVE_SANCOV).is_ok(),
+        }
+    }
+}
+
+impl OptionVisitor for SanCovPassVisitor {
+    fn visit(&mut self, options: &mut Vec<CompilerOption>) {
+        if !self.enabled {
+            return;
+        }
+        let use_sancov = !options.get_options("-fsanitize-coverage").is_empty();
+        if use_sancov {
+            self.pass_manager.add_llvm_pass(options, "SanCovPass.so");
+        }
     }
 }

@@ -11,7 +11,7 @@ mod x_visitor;
 pub use default_optimization_visitor::DefaultOptimizationVisitor;
 pub use default_parameters_visitor::DefaultParametersVisitor;
 pub use libfuzzer_visitor::LibfuzzerVisitor;
-pub use pass_visitor::{CMDFuzzVisitor, TTRFuzzVisitor};
+pub use pass_visitor::{CMDFuzzVisitor, TTRFuzzVisitor, SanCovPassVisitor};
 pub use runtime_visitor::RuntimeVisitor;
 pub use sanitizer_visitor::SanitizerVisitor;
 pub use x_visitor::XVisitor;

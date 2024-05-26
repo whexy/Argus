@@ -6,7 +6,8 @@ use argus::{
     option_manager::CompilerOptionManager,
     option_visitors::{
         CMDFuzzVisitor, DefaultOptimizationVisitor, DefaultParametersVisitor, LibfuzzerVisitor,
-        OptionVisitor, RuntimeVisitor, SanitizerVisitor, TTRFuzzVisitor, XVisitor,
+        OptionVisitor, RuntimeVisitor, SanCovPassVisitor, SanitizerVisitor, TTRFuzzVisitor,
+        XVisitor,
     },
 };
 
@@ -21,6 +22,7 @@ fn main() {
     let visitors: Vec<Box<dyn OptionVisitor>> = vec![
         Box::<DefaultParametersVisitor>::default(), // add -g, -fPIC, remove some -W options
         Box::<DefaultOptimizationVisitor>::default(), // add -O3
+        Box::<SanCovPassVisitor>::default(),
         Box::<SanitizerVisitor>::default(),
         Box::<XVisitor>::default(),
         Box::<LibfuzzerVisitor>::default(),

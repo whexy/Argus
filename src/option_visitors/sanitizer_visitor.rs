@@ -23,7 +23,7 @@ impl SanitizerVisitor {
             use_asan: false,
             use_msan: false,
             use_ubsan: false,
-            use_cov: true,
+            use_cov: false,
         }
     }
 
