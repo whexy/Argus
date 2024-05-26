@@ -138,7 +138,7 @@ impl SanCovPassVisitor {
     pub fn new() -> Self {
         SanCovPassVisitor {
             pass_manager: LLVMPassManager::new(),
-            enabled: !std::env::var(NATIVE_SANCOV).is_ok(),
+            enabled: std::env::var(NATIVE_SANCOV).is_err(),
         }
     }
 }

@@ -1,11 +1,12 @@
 use crate::compiler_option::{CompilerOption, OptionManagement};
-use crate::env::DRIVER;
+use crate::env::{DRIVER, DRIVER_PASSTHROUGH};
 use crate::object::find_object;
 use crate::option_visitors::OptionVisitor;
 
 /// Visitor to remove the fuzzer sanitizer from the options. If libFuzzer is used, replace it with the "FUZZER_LIB".
 pub struct LibfuzzerVisitor {
     driver: String,
+    passthrough: bool,
 }
 
 impl Default for LibfuzzerVisitor {
@@ -16,13 +17,21 @@ impl Default for LibfuzzerVisitor {
 
 impl LibfuzzerVisitor {
     pub fn new() -> Self {
-        let fuzzer_lib = std::env::var(DRIVER).unwrap_or(String::from("bandfuzz-driver.o"));
-        LibfuzzerVisitor { driver: fuzzer_lib }
+        let driver = std::env::var(DRIVER).unwrap_or(String::from("bandfuzz-driver.o"));
+        let passthrough = std::env::var(DRIVER_PASSTHROUGH).is_ok();
+        LibfuzzerVisitor {
+            driver,
+            passthrough,
+        }
     }
 }
 
 impl OptionVisitor for LibfuzzerVisitor {
     fn visit(&mut self, options: &mut Vec<CompilerOption>) {
+        if self.passthrough {
+            return; // leave it as it is
+        }
+
         let mut add_driver = false;
 
         // Iterate over all sanitizer options and remove the fuzzer sanitizer

@@ -19,7 +19,8 @@ macro_rules! define_env_vars {
 define_env_vars! {
     ARGUS_DEBUG: "ARGUS_DEBUG" => "Enable debugging for Argus.",
     CMDFUZZ: "CMDFUZZ" => "Command (argument) fuzzing mode.",
-    DRIVER: "FUZZER_LIB" => "Library used as the fuzzer driver (libFuzzer mode).",
+    DRIVER: "BANDFUZZ_DRIVER" => "Library used as the fuzzer driver (libFuzzer mode).",
+    DRIVER_PASSTHROUGH: "DRIVER_PASSTHROUGH" => "Pass through the libFuzzer option (leave it as it is).",
     ENABLE_ASAN: "AFL_USE_ASAN" => "Enable AddressSanitizer.",
     ENABLE_COVSAN: "BANDFUZZ_NOCOV" => "Enable coverage sanitizer.",
     ENABLE_MSAN: "AFL_USE_MSAN" => "Enable MemorySanitizer.",
