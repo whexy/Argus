@@ -1,3 +1,5 @@
+use std::default;
+
 use crate::compiler_option::{CompilerOption, OptionManagement};
 use crate::env::{DRIVER, DRIVER_PASSTHROUGH};
 use crate::object::find_object;
@@ -41,10 +43,18 @@ impl OptionVisitor for LibfuzzerVisitor {
             return;
         }
 
-        let default_driver = if options.get_options("-stdlib=libc++").is_empty() {
-            "bandfuzz-driver.o"
-        } else {
+        let mut nonstd = false;
+        for stdlib_options in options.get_options("-stdlib") {
+            if stdlib_options.contains("libc++") {
+                nonstd = true;
+                break;
+            }
+        }
+
+        let default_driver = if nonstd {
             "bandfuzz-driver-libc++.o"
+        } else {
+            "bandfuzz-driver.o"
         };
 
         let driver = std::env::var(DRIVER).unwrap_or(String::from(default_driver));
