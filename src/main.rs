@@ -6,8 +6,8 @@ use argus::{
     option_manager::CompilerOptionManager,
     option_visitors::{
         CMDFuzzVisitor, DefaultOptimizationVisitor, DefaultParametersVisitor, LibfuzzerVisitor,
-        OptionVisitor, RuntimeVisitor, SanCovPassVisitor, SanitizerVisitor, TTRFuzzVisitor,
-        XVisitor,
+        OptionVisitor, ProfileVisitor, RuntimeVisitor, SanCovPassVisitor, SanitizerVisitor,
+        TTRFuzzVisitor, XVisitor,
     },
 };
 
@@ -29,6 +29,7 @@ fn main() {
         Box::<TTRFuzzVisitor>::default(),
         Box::<CMDFuzzVisitor>::default(),
         Box::<SanCovPassVisitor>::default(),
+        Box::<ProfileVisitor>::default(),
     ];
 
     for mut visitor in visitors {

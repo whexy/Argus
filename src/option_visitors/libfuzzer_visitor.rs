@@ -1,5 +1,3 @@
-use std::default;
-
 use crate::compiler_option::{CompilerOption, OptionManagement};
 use crate::env::{DRIVER, DRIVER_PASSTHROUGH};
 use crate::object::find_object;

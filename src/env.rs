@@ -29,6 +29,7 @@ define_env_vars! {
     NORUNTIME: "BANDFUZZ_NORUNTIME" => "Disable linking runtime to the target.",
     NOSANITIZER: "BANDFUZZ_NOSAN" => "Disable all sanitizers.",
     OPT_LEVEL: "BANDFUZZ_OPT" => "Optimization level for the target.",
+    PROFILING: "BANDFUZZ_PROFILE" => "Enable profiling.",
     RUNTIME: "BANDFUZZ_RUNTIME" => "File path to runtime linked to the target.",
     TTRFUZZ: "TTRFUZZ" => "Calculate Time-To-Reach.",
 }
