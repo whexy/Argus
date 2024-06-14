@@ -1,3 +1,5 @@
+use std::fs::OpenOptions;
+use std::io::Write;
 use std::os::unix::process::ExitStatusExt;
 
 use argus::{
@@ -65,7 +67,23 @@ fn main() {
             "ARGUS".italic().bold(),
             format!("{} {}", compiler, manager).cyan()
         );
-        print_envs()
+
+        // also, append the command to the end of /tmp/argus.log file, if it exists. Otherwise, create it first.
+        let log_path = std::path::Path::new("/tmp/argus.log");
+        let log_entry = format!(
+            "{} \n \t ==> {} {}\n",
+            std::env::args().collect::<Vec<_>>().join(" "),
+            compiler,
+            manager
+        );
+
+        let mut file = OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(log_path)
+            .expect("Could not open log file");
+
+        writeln!(file, "{}", log_entry).expect("Could not write to log file");
     }
 
     // Execute the command
