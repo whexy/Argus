@@ -22,7 +22,7 @@ define_env_vars! {
     DRIVER: "BANDFUZZ_DRIVER" => "Library used as the fuzzer driver (libFuzzer mode).",
     DRIVER_PASSTHROUGH: "DRIVER_PASSTHROUGH" => "Pass through the libFuzzer option (leave it as it is).",
     ENABLE_ASAN: "AFL_USE_ASAN" => "Enable AddressSanitizer.",
-    ENABLE_COVSAN: "BANDFUZZ_NOCOV" => "Enable coverage sanitizer.",
+    ENABLE_COVSAN: "BANDFUZZ_USECOV" => "Enable coverage sanitizer.",
     ENABLE_MSAN: "AFL_USE_MSAN" => "Enable MemorySanitizer.",
     ENABLE_UBSAN: "AFL_USE_UBSAN" => "Enable UndefinedBehaviorSanitizer.",
     NATIVE_SANCOV: "BANDFUZZ_NATIVESANCOV" => "Use native coverage sanitizer.",
