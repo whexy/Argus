@@ -67,6 +67,9 @@ impl OptionVisitor for LibfuzzerVisitor {
                     .to_string_lossy()
                     .as_ref(),
             ));
+            if !nonstd {
+                options.add_or_modify(&CompilerOption::new("-lstdc++"));
+            }
         } else {
             panic!(
                 "Could not find the driver library for the current FUZZER_LIB: {}",
