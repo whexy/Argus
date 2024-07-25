@@ -25,6 +25,7 @@ define_env_vars! {
     ENABLE_COVSAN: "BANDFUZZ_USECOV" => "Enable coverage sanitizer.",
     ENABLE_MSAN: "AFL_USE_MSAN" => "Enable MemorySanitizer.",
     ENABLE_UBSAN: "AFL_USE_UBSAN" => "Enable UndefinedBehaviorSanitizer.",
+    FUNCTION_INSTRUMENTATION: "BANDFUZZ_FUNCINSTR" => "Enable function-level instrumentation. (-finstrument-functions)",
     NATIVE_SANCOV: "BANDFUZZ_NATIVESANCOV" => "Use native coverage sanitizer.",
     NORUNTIME: "BANDFUZZ_NORUNTIME" => "Disable linking runtime to the target.",
     NOSANITIZER: "BANDFUZZ_NOSAN" => "Disable all sanitizers.",
