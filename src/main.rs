@@ -7,9 +7,9 @@ use argus::{
     llvm::{get_clang_path, get_clang_plus_plus_path},
     option_manager::CompilerOptionManager,
     option_visitors::{
-        CMDFuzzVisitor, DefaultOptimizationVisitor, DefaultParametersVisitor, LibfuzzerVisitor,
-        OptionVisitor, ProfileVisitor, InstrumentationVisitor, RuntimeVisitor, SanCovPassVisitor, SanitizerVisitor,
-        TTRFuzzVisitor, XVisitor,
+        CMDFuzzVisitor, DefaultOptimizationVisitor, DefaultParametersVisitor, FunctionCallVisitor,
+        LibfuzzerVisitor, OptionVisitor, ProfileVisitor, RuntimeVisitor, SanCovPassVisitor,
+        SanitizerVisitor, TTRFuzzVisitor, XVisitor,
     },
 };
 
@@ -31,8 +31,9 @@ fn main() {
         Box::<TTRFuzzVisitor>::default(),
         Box::<CMDFuzzVisitor>::default(),
         Box::<SanCovPassVisitor>::default(),
+        Box::<FunctionCallVisitor>::default(),
         Box::<ProfileVisitor>::default(),
-        Box::<InstrumentationVisitor>::default(),
+        // Box::<InstrumentationVisitor>::default(), // replaced by FunctionCallVisitor
     ];
 
     for mut visitor in visitors {

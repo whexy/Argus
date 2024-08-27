@@ -56,5 +56,8 @@ impl OptionVisitor for RuntimeVisitor {
                 .to_string_lossy()
                 .as_ref(),
         ));
+        options.add_or_mix(&CompilerOption::new("-lpthread"));
+        options.add_or_mix(&CompilerOption::new("-ldl"));
+        options.add_or_mix(&CompilerOption::new("-lgcc"));
     }
 }

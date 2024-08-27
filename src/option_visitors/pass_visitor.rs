@@ -1,6 +1,6 @@
 use crate::{
     compiler_option::{CompilerOption, OptionManagement},
-    env::{CMDFUZZ, NATIVE_SANCOV, TTRFUZZ},
+    env::{CMDFUZZ, FUNCTION_INSTRUMENTATION, NATIVE_SANCOV, TTRFUZZ},
     llvm, object,
 };
 
@@ -94,6 +94,7 @@ impl OptionVisitor for CMDFuzzVisitor {
     }
 }
 
+// TTRFuzz visitor
 pub struct TTRFuzzVisitor {
     pass_manager: LLVMPassManager,
     enabled: bool,
@@ -123,6 +124,7 @@ impl OptionVisitor for TTRFuzzVisitor {
     }
 }
 
+// SanCov visitor
 pub struct SanCovPassVisitor {
     pass_manager: LLVMPassManager,
     enabled: bool,
@@ -149,5 +151,35 @@ impl OptionVisitor for SanCovPassVisitor {
             return;
         }
         self.pass_manager.add_llvm_pass(options, "SanCovPass.so");
+    }
+}
+
+// FunctionCall visitor
+pub struct FunctionCallVisitor {
+    pass_manager: LLVMPassManager,
+    enabled: bool,
+}
+
+impl Default for FunctionCallVisitor {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl FunctionCallVisitor {
+    pub fn new() -> Self {
+        FunctionCallVisitor {
+            pass_manager: LLVMPassManager::new(),
+            enabled: std::env::var(FUNCTION_INSTRUMENTATION).is_ok(),
+        }
+    }
+}
+
+impl OptionVisitor for FunctionCallVisitor {
+    fn visit(&mut self, options: &mut Vec<CompilerOption>) {
+        if !self.enabled {
+            return;
+        }
+        self.pass_manager.add_llvm_pass(options, "FineIWillDoItMyselfPass.so");
     }
 }

@@ -14,7 +14,7 @@ pub use default_optimization_visitor::DefaultOptimizationVisitor;
 pub use default_parameters_visitor::DefaultParametersVisitor;
 pub use instrumentation_visitor::InstrumentationVisitor;
 pub use libfuzzer_visitor::LibfuzzerVisitor;
-pub use pass_visitor::{CMDFuzzVisitor, SanCovPassVisitor, TTRFuzzVisitor};
+pub use pass_visitor::{CMDFuzzVisitor, SanCovPassVisitor, TTRFuzzVisitor, FunctionCallVisitor};
 pub use profile_visitor::ProfileVisitor;
 pub use runtime_visitor::RuntimeVisitor;
 pub use sanitizer_visitor::SanitizerVisitor;
