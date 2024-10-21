@@ -7,9 +7,9 @@ use argus::{
     llvm::{get_clang_path, get_clang_plus_plus_path},
     option_manager::CompilerOptionManager,
     option_visitors::{
-        CMDFuzzVisitor, DefaultOptimizationVisitor, DefaultParametersVisitor, FunctionCallVisitor,
-        LibfuzzerVisitor, OptionVisitor, ProfileVisitor, RuntimeVisitor, SanCovPassVisitor,
-        SanitizerVisitor, TTRFuzzVisitor, XVisitor,
+        AdditionalObjectsVisitor, AdditionalPassesVisitor, DefaultOptimizationVisitor,
+        DefaultParametersVisitor, LibfuzzerVisitor, OptionVisitor, ProfileVisitor, RuntimeVisitor,
+        SanitizerVisitor, XVisitor,
     },
 };
 
@@ -21,20 +21,29 @@ fn main() {
 
     let mut manager = CompilerOptionManager::new(args);
 
-    let visitors: Vec<Box<dyn OptionVisitor>> = vec![
-        Box::<DefaultParametersVisitor>::default(), // add -g, -fPIC, remove some -W options
-        Box::<DefaultOptimizationVisitor>::default(), // add -O3
+    let mut visitors: Vec<Box<dyn OptionVisitor>> = vec![
+        Box::<DefaultParametersVisitor>::default(),
+        Box::<DefaultOptimizationVisitor>::default(),
         Box::<SanitizerVisitor>::default(),
         Box::<XVisitor>::default(),
-        Box::<LibfuzzerVisitor>::default(),
-        Box::<RuntimeVisitor>::default(),
-        Box::<TTRFuzzVisitor>::default(),
-        Box::<CMDFuzzVisitor>::default(),
-        Box::<SanCovPassVisitor>::default(),
-        Box::<FunctionCallVisitor>::default(),
-        Box::<ProfileVisitor>::default(),
-        // Box::<InstrumentationVisitor>::default(), // replaced by FunctionCallVisitor
     ];
+
+    // Optional visitors
+    if std::env::var(ADD_DRIVER).is_ok() {
+        visitors.push(Box::<LibfuzzerVisitor>::default());
+    }
+    if std::env::var(ADD_RUNTIME).is_ok() {
+        visitors.push(Box::<RuntimeVisitor>::default());
+    }
+    if std::env::var(PROFILING).is_ok() {
+        visitors.push(Box::<ProfileVisitor>::default());
+    }
+    if std::env::var(ADD_ADDITIONAL_PASSES).is_ok() {
+        visitors.push(Box::<AdditionalPassesVisitor>::default());
+    }
+    if std::env::var(ADD_ADDITIONAL_OBJECTS).is_ok() {
+        visitors.push(Box::<AdditionalObjectsVisitor>::default());
+    }
 
     for mut visitor in visitors {
         visitor.visit(&mut manager.options);
