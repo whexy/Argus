@@ -24,13 +24,7 @@ define_env_vars! {
     ADD_RUNTIME: "ADD_RUNTIME" => "Enable runtime linking.",
     ADD_ADDITIONAL_PASSES: "ADD_ADDITIONAL_PASSES" => "Enable additional passes.",
     ADD_ADDITIONAL_OBJECTS: "ADD_ADDITIONAL_OBJECTS" => "Enable additional object files.",
-
-    NATIVE_SANCOV: "BANDFUZZ_NATIVESANCOV" => "Use native coverage sanitizer.",
-    NORUNTIME: "BANDFUZZ_NORUNTIME" => "Disable linking runtime to the target.",
-    CMDFUZZ: "CMDFUZZ" => "Command (argument) fuzzing mode.",
-    FUNCTION_INSTRUMENTATION: "BANDFUZZ_FUNCINSTR" => "Enable function-level instrumentation. (-finstrument-functions)",
     PROFILING: "BANDFUZZ_PROFILE" => "Enable profiling.",
-    TTRFUZZ: "TTRFUZZ" => "Calculate Time-To-Reach.",
 
     // options to control visitors
     RUNTIME: "BANDFUZZ_RUNTIME" => "File path to runtime linked to the target.",
