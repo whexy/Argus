@@ -47,7 +47,7 @@ ARGUS uses a series of visitors to modify and enhance the compilation process. E
 ### Optional Visitors
 
 - **LibfuzzerVisitor**: 
-  - Enabled by setting the `HARNESS_MODE` environment variable.
+  - Enabled by setting the `ADD_DRIVER` environment variable.
   - Removes `-fsanitize=fuzzer` and substitutes it with a driver for AFL++ fuzzing support.
   - The default driver is `bandfuzz-driver.o` for standard C libraries, and `bandfuzz-driver-libc++.o` for libc++ libraries.
   - The environment variable `BANDFUZZ_DRIVER` can be used to override the default driver.
@@ -76,7 +76,7 @@ ARGUS uses a series of visitors to modify and enhance the compilation process. E
 - `BANDFUZZ_OPT`: If this environment variable is set, it will be used to set the optimization level. The value must be an integer between 0 and 3, i.e. `export BANDFUZZ_OPT=2` will apply `-O2` to the compilation command.
 - `NOSANITIZER`: If this environment variable is set, all sanitizers will be disabled.
 - `ENABLE_ASAN`, `ENABLE_MSAN`, `ENABLE_UBSAN`, `ENABLE_COVSAN`: If these environment variables are set, the corresponding sanitizers will be enabled (overrides `NOSANITIZER`).
-- `HARNESS_MODE`: Enables the LibfuzzerVisitor for AFL++ fuzzing support.
+- `ADD_DRIVER`: Enables the LibfuzzerVisitor for AFL++ fuzzing support.
 - `BANDFUZZ_DRIVER`: Overrides the default fuzzing driver.
 - `ADD_RUNTIME`: Enables the RuntimeVisitor to add runtime components.
 - `BANDFUZZ_RUNTIME`: Overrides the default runtime component.
